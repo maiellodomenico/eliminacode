@@ -11,6 +11,13 @@ jobs:
   totem:
     runs-on: windows-latest
     defaults: { run: { working-directory: apps/totem-windows } }
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.ELIMINACODE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.ELIMINACODE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_LOCATION_ID: ${{ vars.ELIMINACODE_LOCATION_ID }}
+      VITE_TOTEM_DEVICE_ID: ${{ vars.ELIMINACODE_TOTEM_DEVICE_ID }}
+      VITE_TOTEM_DEVICE_KEY: ${{ secrets.ELIMINACODE_TOTEM_DEVICE_KEY }}
+      VITE_PUBLIC_CLAIM_BASE_URL: ${{ vars.ELIMINACODE_PUBLIC_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,8 +26,9 @@ jobs:
       - run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Totem-Windows-v0.4.0
+          name: Eliminacode-Totem-Windows-v0.5.0
           path: apps/totem-windows/release/*.exe
+          if-no-files-found: error
   display:
     runs-on: windows-latest
     defaults: { run: { working-directory: apps/display-terminal } }
@@ -36,5 +44,6 @@ jobs:
       - run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Display-Windows-v0.4.0
+          name: Eliminacode-Display-Windows-v0.5.0
           path: apps/display-terminal/release/*.exe
+          if-no-files-found: error
