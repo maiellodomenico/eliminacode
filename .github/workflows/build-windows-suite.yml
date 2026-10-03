@@ -1,0 +1,40 @@
+name: Build Windows Suite
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/totem-windows/**'
+      - 'apps/display-terminal/**'
+      - '.github/workflows/build-windows-suite.yml'
+jobs:
+  totem:
+    runs-on: windows-latest
+    defaults: { run: { working-directory: apps/totem-windows } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm install
+      - run: npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Eliminacode-Totem-Windows-v0.4.0
+          path: apps/totem-windows/release/*.exe
+  display:
+    runs-on: windows-latest
+    defaults: { run: { working-directory: apps/display-terminal } }
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.ELIMINACODE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.ELIMINACODE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_DISPLAY_DEPARTMENT_ID: ${{ vars.ELIMINACODE_DISPLAY_DEPARTMENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm install
+      - run: npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Eliminacode-Display-Windows-v0.4.0
+          path: apps/display-terminal/release/*.exe
