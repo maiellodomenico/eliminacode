@@ -1,40 +1,76 @@
 import React,{useEffect,useState} from 'react';
 import QRCode from 'qrcode';
-
-type Department={id:string;name:string;icon:string;prefix:string};
-type Ticket={ticketId:string;displayNumber:string;departmentName:string;peopleAhead:number;estimatedMinutes:number;claimUrl:string};
-const demoDepartments:Department[]=[
-{id:'MACELLERIA',name:'Macelleria',icon:'🥩',prefix:'M'},{id:'SALUMERIA',name:'Salumeria',icon:'🧀',prefix:'S'},{id:'PANETTERIA',name:'Panetteria',icon:'🥖',prefix:'P'},{id:'PESCHERIA',name:'Pescheria',icon:'🐟',prefix:'F'},{id:'PASTICCERIA',name:'Pasticceria',icon:'🍰',prefix:'C'}];
-let seq=40;
-const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
-async function departments(){await sleep(80);return demoDepartments}
-async function createTicket(d:Department,channel:'paper'|'qr'){await sleep(100);seq++;return {ticketId:`demo-${seq}`,displayNumber:`${d.prefix}${String(seq).padStart(3,'0')}`,departmentName:d.name,peopleAhead:seq%7,estimatedMinutes:5+seq%8,claimUrl:`https://queue.example.com/claim/demo-${seq}`} as Ticket}
+import {Department,Ticket,departments,createTicket,createTapSession} from './api';
 
 type Screen='boot'|'customer'|'admin';
 type Mode='print'|'qr'|'nfc'|null;
+
 export default function App(){
- const [screen,setScreen]=useState<Screen>('boot'); const [deps,setDeps]=useState<Department[]>([]);const [dep,setDep]=useState<Department|null>(null);const [mode,setMode]=useState<Mode>(null);const [ticket,setTicket]=useState<Ticket|null>(null);const [qr,setQr]=useState('');const [cfg,setCfg]=useState<any>({});const [printers,setPrinters]=useState<any[]>([]);const [pin,setPin]=useState('');const [adminUnlocked,setAdminUnlocked]=useState(false);const [msg,setMsg]=useState('');
- useEffect(()=>{departments().then(setDeps);window.kiosk.getConfig().then(setCfg)},[]);
- const reset=()=>{setDep(null);setMode(null);setTicket(null);setQr('');setMsg('')};
- async function choose(m:Mode){if(!dep||!m)return;setMode(m);if(m==='nfc'){setMsg('Avvicina il telefono al tag NFC del totem');return;}const t=await createTicket(dep,m==='print'?'paper':'qr');setTicket(t);if(m==='print'){const r=await window.kiosk.printTicket(t);setMsg(r.ok?'Ticket stampato. Ritiralo sotto lo schermo.':r.message||'Errore stampa')}else setQr(await QRCode.toDataURL(t.claimUrl,{width:460,margin:1}))}
+ const [screen,setScreen]=useState<Screen>('boot');
+ const [deps,setDeps]=useState<Department[]>([]);
+ const [dep,setDep]=useState<Department|null>(null);
+ const [mode,setMode]=useState<Mode>(null);
+ const [ticket,setTicket]=useState<Ticket|null>(null);
+ const [qr,setQr]=useState('');
+ const [cfg,setCfg]=useState<any>({});
+ const [printers,setPrinters]=useState<any[]>([]);
+ const [pin,setPin]=useState('');
+ const [adminUnlocked,setAdminUnlocked]=useState(false);
+ const [msg,setMsg]=useState('');
+ const [loading,setLoading]=useState(false);
+
+ useEffect(()=>{
+   departments().then(setDeps).catch(e=>setMsg(`Errore reparti: ${String(e?.message||e)}`));
+   window.kiosk.getConfig().then(setCfg).catch(()=>{});
+ },[]);
+
+ const reset=()=>{setDep(null);setMode(null);setTicket(null);setQr('');setMsg('');setLoading(false)};
+
+ async function choose(m:Mode){
+   if(!dep||!m||loading)return;
+   setMode(m);setLoading(true);setMsg('');
+   try{
+     if(m==='nfc'){
+       const s=await createTapSession(dep);
+       setMsg(`Sessione NFC pronta fino alle ${new Date(s.expiresAt).toLocaleTimeString('it-IT')}. Avvicina il telefono al tag NFC del Totem.`);
+       return;
+     }
+     const t=await createTicket(dep,m==='print'?'paper':'qr');
+     setTicket(t);
+     if(m==='print'){
+       const r=await window.kiosk.printTicket(t);
+       setMsg(r.ok?'Ticket creato e stampato. Ritiralo sotto lo schermo.':r.message||'Ticket creato, ma errore durante la stampa');
+     }else{
+       setQr(await QRCode.toDataURL(t.claimUrl,{width:460,margin:1,errorCorrectionLevel:'M'}));
+     }
+   }catch(e:any){
+     setMsg(String(e?.message||e));
+     setMode(null);
+   }finally{setLoading(false)}
+ }
+
  async function openAdmin(){const c=await window.kiosk.getConfig();setCfg(c);setScreen('admin');setAdminUnlocked(false);setPin('')}
  async function refreshPrinters(){setPrinters(await window.kiosk.listPrinters())}
  async function save(){const n=await window.kiosk.saveConfig(cfg);setCfg(n);setMsg('Configurazione salvata')}
+
  if(screen==='boot')return <main className="boot"><div className="bootCard"><div className="brandHero">ELIMINACODE</div><p>Seleziona la modalità di avvio</p><div className="bootChoices"><button onClick={()=>setScreen('customer')}>👥<b>UTENTE</b><small>Reparti, ticket, QR e NFC</small></button><button onClick={openAdmin}>⚙️<b>AMMINISTRATORE</b><small>Stampanti e configurazione</small></button></div></div></main>;
+
  if(screen==='admin'){
    if(!adminUnlocked)return <main className="adminShell"><div className="adminLogin"><h1>Amministrazione</h1><p>Inserisci PIN amministratore</p><input type="password" value={pin} onChange={e=>setPin(e.target.value)} autoFocus/><button onClick={()=>setAdminUnlocked(pin===String(cfg.adminPin||'1234'))}>Accedi</button><button className="ghost" onClick={()=>setScreen('boot')}>Indietro</button>{pin&&pin!==String(cfg.adminPin||'1234')&&<small>PIN predefinito: 1234 finché non lo cambi.</small>}</div></main>;
    return <main className="adminShell"><header className="adminHeader"><div><b>ELIMINACODE</b><span>Configurazione Totem</span></div><button onClick={()=>setScreen('boot')}>Esci</button></header><div className="adminGrid">
-    <section><h2>Stampante termica</h2><button onClick={refreshPrinters}>Rileva stampanti</button><select value={cfg.printerName||''} onChange={e=>setCfg({...cfg,printerName:e.target.value})}><option value="">Seleziona stampante...</option>{printers.map(p=><option key={p.name} value={p.name}>{p.displayName||p.name}{p.isDefault?' • predefinita':''}</option>)}</select><label><input type="checkbox" checked={!!cfg.printerEnabled} onChange={e=>setCfg({...cfg,printerEnabled:e.target.checked})}/> Abilita stampa reale</label><div className="rowBtns"><button onClick={()=>window.kiosk.openPrinterSettings()}>Aggiungi/installa stampante Windows</button><button onClick={()=>window.kiosk.testPrint()}>Test stampa</button></div></section>
+    <section><h2>Stampante termica</h2><button onClick={refreshPrinters}>Rileva stampanti</button><select value={cfg.printerName||''} onChange={e=>setCfg({...cfg,printerName:e.target.value})}><option value="">Seleziona stampante...</option>{printers.map(p=><option key={p.name} value={p.name}>{p.displayName||p.name}</option>)}</select><label><input type="checkbox" checked={!!cfg.printerEnabled} onChange={e=>setCfg({...cfg,printerEnabled:e.target.checked})}/> Abilita stampa reale</label><div className="rowBtns"><button onClick={()=>window.kiosk.openPrinterSettings()}>Aggiungi/installa stampante Windows</button><button onClick={()=>window.kiosk.testPrint()}>Test stampa</button></div></section>
     <section><h2>Formato ticket</h2><label>Larghezza<select value={cfg.ticketWidthMm||80} onChange={e=>setCfg({...cfg,ticketWidthMm:Number(e.target.value)})}><option value="58">58 mm</option><option value="80">80 mm</option></select></label><label>Copie<input type="number" min="1" max="5" value={cfg.ticketCopies||1} onChange={e=>setCfg({...cfg,ticketCopies:Number(e.target.value)})}/></label><label>Dimensione numero<input type="number" min="30" max="100" value={cfg.numberFontSize||64} onChange={e=>setCfg({...cfg,numberFontSize:Number(e.target.value)})}/></label><label><input type="checkbox" checked={!!cfg.showPeopleAhead} onChange={e=>setCfg({...cfg,showPeopleAhead:e.target.checked})}/> Mostra persone davanti</label><label><input type="checkbox" checked={!!cfg.showDateTime} onChange={e=>setCfg({...cfg,showDateTime:e.target.checked})}/> Data e ora</label><label><input type="checkbox" checked={!!cfg.showQrOnPaper} onChange={e=>setCfg({...cfg,showQrOnPaper:e.target.checked})}/> QR sul ticket cartaceo</label></section>
     <section><h2>Testi da stampare</h2><label>Titolo<input value={cfg.title||''} onChange={e=>setCfg({...cfg,title:e.target.value})}/></label><label>Sottotitolo<input value={cfg.subtitle||''} onChange={e=>setCfg({...cfg,subtitle:e.target.value})}/></label><label>Piè di pagina<textarea value={cfg.footer||''} onChange={e=>setCfg({...cfg,footer:e.target.value})}/></label></section>
     <section><h2>Totem</h2><label>ID Totem<input value={cfg.stationId||''} onChange={e=>setCfg({...cfg,stationId:e.target.value})}/></label><label>Nuovo PIN amministratore<input value={cfg.adminPin||''} onChange={e=>setCfg({...cfg,adminPin:e.target.value})}/></label><label>Reset automatico (sec)<input type="number" value={cfg.autoResetSeconds||20} onChange={e=>setCfg({...cfg,autoResetSeconds:Number(e.target.value)})}/></label><div className="rowBtns"><button onClick={()=>window.kiosk.exitKiosk()}>Esci da fullscreen</button><button onClick={()=>window.kiosk.enterKiosk()}>Rientra fullscreen</button></div></section>
    </div><footer className="adminFooter"><span>{msg}</span><button className="save" onClick={save}>Salva configurazione</button></footer></main>
  }
+
  return <main className="shell"><header><div className="brand">ELIMINACODE</div><div className="sub">Scegli il reparto e prendi il tuo turno</div><button className="adminShortcut" onClick={openAdmin}>⚙</button></header>
- {!dep&&<section className="grid">{deps.map(d=><button className="dept" key={d.id} onClick={()=>setDep(d)}><span>{d.icon}</span><b>{d.name}</b></button>)}</section>}
- {dep&&!mode&&<section className="panel"><button className="back" onClick={reset}>← Cambia reparto</button><h1>{dep.icon} {dep.name}</h1><p>Come vuoi prendere il numero?</p><div className="choices"><button onClick={()=>choose('print')}>🧾<b>STAMPA TICKET</b><small>Numero cartaceo</small></button><button onClick={()=>choose('qr')}>▦<b>QR CODE</b><small>Numero sul telefono</small></button><button onClick={()=>choose('nfc')}>◉<b>NFC</b><small>Avvicina il telefono</small></button></div></section>}
+ {msg&&!dep&&<section className="panel"><p>{msg}</p><button onClick={()=>location.reload()}>Riprova</button></section>}
+ {!dep&&deps.length>0&&<section className="grid">{deps.map(d=><button className="dept" key={d.id} onClick={()=>setDep(d)}><span>{d.icon}</span><b>{d.name}</b></button>)}</section>}
+ {dep&&!mode&&<section className="panel"><button className="back" onClick={reset}>← Cambia reparto</button><h1>{dep.icon} {dep.name}</h1><p>Come vuoi prendere il numero?</p><div className="choices"><button disabled={loading} onClick={()=>choose('print')}>🧾<b>STAMPA TICKET</b><small>Numero cartaceo</small></button><button disabled={loading} onClick={()=>choose('qr')}>▦<b>QR CODE</b><small>Numero sul telefono</small></button><button disabled={loading} onClick={()=>choose('nfc')}>◉<b>NFC</b><small>Avvicina il telefono</small></button></div>{msg&&<p>{msg}</p>}</section>}
  {mode==='print'&&ticket&&<section className="result ticketPreview"><div className="receipt"><div className="receiptBrand">{cfg.title||'ELIMINACODE'}</div><div className="receiptDept">{ticket.departmentName}</div><div className="receiptNum">{ticket.displayNumber}</div><div className="receiptMeta">{ticket.peopleAhead} persone prima di te • circa {ticket.estimatedMinutes} min</div><div className="receiptLine"/><div className="receiptFoot">{cfg.footer||'Conserva il ticket e attendi la chiamata'}</div></div><p>{msg}</p><button onClick={reset}>Fine</button></section>}
- {mode==='qr'&&ticket&&<section className="result"><h2>{ticket.departmentName}</h2><div className="number">{ticket.displayNumber}</div>{qr&&<img className="qr" src={qr}/>}<p>Apri l'app e inquadra il QR code.</p><button onClick={reset}>Annulla</button></section>}
+ {mode==='qr'&&ticket&&<section className="result"><h2>{ticket.departmentName}</h2><div className="number">{ticket.displayNumber}</div>{qr&&<img className="qr" src={qr}/>}<p>Apri l'app Eliminacode e inquadra il QR. Questo è lo stesso ticket e mantiene la stessa priorità.</p><button onClick={reset}>Fine</button></section>}
  {mode==='nfc'&&<section className="result nfc"><div className="waves">)))</div><h2>Avvicina il telefono</h2><p>{msg}</p><button onClick={reset}>Annulla</button></section>}
  </main>
 }
