@@ -2,12 +2,16 @@
   "expo": {
     "name": "Eliminacode Operatore",
     "slug": "eliminacode-operatore",
-    "version": "0.2.0",
-    "orientation": "landscape",
+    "version": "0.6.0",
+    "orientation": "default",
     "userInterfaceStyle": "light",
     "android": {
       "package": "com.eliminacode.operator",
-      "versionCode": 2
+      "versionCode": 6
+    },
+    "ios": {
+      "bundleIdentifier": "com.eliminacode.operator",
+      "supportsTablet": true
     }
   }
 }
