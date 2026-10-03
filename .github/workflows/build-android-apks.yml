@@ -1,4 +1,4 @@
-name: Build Android demo APKs
+name: Build Android release APKs
 
 on:
   workflow_dispatch:
@@ -34,16 +34,16 @@ jobs:
       - name: Generate Android project
         run: npx expo prebuild --platform android --clean --non-interactive
 
-      - name: Build installable demo APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
+      - name: Build standalone release APK
+        run: cd android && ./gradlew assembleRelease --no-daemon
 
       - name: Rename APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk Eliminacode-Cliente-DEMO.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk Eliminacode-Cliente-RELEASE.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Cliente-DEMO-APK
-          path: apps/customer-app/Eliminacode-Cliente-DEMO.apk
+          name: Eliminacode-Cliente-RELEASE-APK
+          path: apps/customer-app/Eliminacode-Cliente-RELEASE.apk
           if-no-files-found: error
 
   operator-apk:
@@ -70,14 +70,14 @@ jobs:
       - name: Generate Android project
         run: npx expo prebuild --platform android --clean --non-interactive
 
-      - name: Build installable demo APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
+      - name: Build standalone release APK
+        run: cd android && ./gradlew assembleRelease --no-daemon
 
       - name: Rename APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk Eliminacode-Operatore-DEMO.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk Eliminacode-Operatore-RELEASE.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Operatore-DEMO-APK
-          path: apps/operator-tablet/Eliminacode-Operatore-DEMO.apk
+          name: Eliminacode-Operatore-RELEASE-APK
+          path: apps/operator-tablet/Eliminacode-Operatore-RELEASE.apk
           if-no-files-found: error
