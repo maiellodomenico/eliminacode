@@ -1,0 +1,73 @@
+name: Build Android demo APKs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'customer-app/**'
+      - 'operator-tablet/**'
+      - '.github/workflows/build-android-apks.yml'
+
+jobs:
+  customer-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: customer-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: customer-app/package.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --clean --non-interactive
+      - name: Build installable demo APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk ../Eliminacode-Cliente-DEMO.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Eliminacode-Cliente-DEMO-APK
+          path: Eliminacode-Cliente-DEMO.apk
+          if-no-files-found: error
+
+  operator-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: operator-tablet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: operator-tablet/package.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --clean --non-interactive
+      - name: Build installable demo APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk ../Eliminacode-Operatore-DEMO.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Eliminacode-Operatore-DEMO-APK
+          path: Eliminacode-Operatore-DEMO.apk
+          if-no-files-found: error
