@@ -1,0 +1,1 @@
+{"compilerOptions":{"strict":true,"jsx":"react-jsx","target":"ES2022","moduleResolution":"Bundler","allowSyntheticDefaultImports":true,"esModuleInterop":true,"skipLibCheck":true},"include":["**/*.ts","**/*.tsx"]}

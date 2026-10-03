@@ -1,0 +1,1 @@
+export default function Page(){return <main className="wrap"><h1>Feedback</h1><p className="muted">Modulo predisposto. Verrà collegato al progetto Supabase Eliminacode dedicato.</p><div className="card">Questa schermata è inclusa nel bootstrap Vercel v0.1.0.</div></main>}
