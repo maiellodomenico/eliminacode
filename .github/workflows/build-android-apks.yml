@@ -1,5 +1,4 @@
 name: Build Android release APKs
-
 on:
   workflow_dispatch:
   push:
@@ -8,76 +7,44 @@ on:
       - 'apps/customer-app/**'
       - 'apps/operator-tablet/**'
       - '.github/workflows/build-android-apks.yml'
-
 jobs:
   customer-apk:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/customer-app
-
+    defaults: { run: { working-directory: apps/customer-app } }
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.ELIMINACODE_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.ELIMINACODE_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_EAS_PROJECT_ID: ${{ vars.ELIMINACODE_EAS_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+        with: { node-version: '22' }
       - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Generate Android project
-        run: npx expo prebuild --platform android --clean --non-interactive
-
-      - name: Build standalone release APK
-        run: cd android && ./gradlew assembleRelease --no-daemon
-
-      - name: Rename APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk Eliminacode-Cliente-RELEASE.apk
-
+        with: { distribution: temurin, java-version: '17' }
+      - run: npm install --legacy-peer-deps
+      - run: npx expo prebuild --platform android --clean --non-interactive
+      - run: cd android && ./gradlew assembleRelease --no-daemon
+      - run: cp android/app/build/outputs/apk/release/app-release.apk Eliminacode-Cliente-v0.5.0.apk
       - uses: actions/upload-artifact@v4
-        with:
-          name: Eliminacode-Cliente-RELEASE-APK
-          path: apps/customer-app/Eliminacode-Cliente-RELEASE.apk
-          if-no-files-found: error
-
+        with: { name: Eliminacode-Cliente-v0.5.0-APK, path: apps/customer-app/Eliminacode-Cliente-v0.5.0.apk, if-no-files-found: error }
   operator-apk:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/operator-tablet
-
+    defaults: { run: { working-directory: apps/operator-tablet } }
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.ELIMINACODE_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.ELIMINACODE_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_DEPARTMENT_ID: ${{ vars.ELIMINACODE_DEMO_DEPARTMENT_ID }}
+      EXPO_PUBLIC_OPERATOR_DEVICE_ID: ${{ vars.ELIMINACODE_OPERATOR_DEVICE_ID }}
+      EXPO_PUBLIC_OPERATOR_DEVICE_KEY: ${{ secrets.ELIMINACODE_OPERATOR_DEVICE_KEY }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+        with: { node-version: '22' }
       - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Generate Android project
-        run: npx expo prebuild --platform android --clean --non-interactive
-
-      - name: Build standalone release APK
-        run: cd android && ./gradlew assembleRelease --no-daemon
-
-      - name: Rename APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk Eliminacode-Operatore-RELEASE.apk
-
+        with: { distribution: temurin, java-version: '17' }
+      - run: npm install --legacy-peer-deps
+      - run: npx expo prebuild --platform android --clean --non-interactive
+      - run: cd android && ./gradlew assembleRelease --no-daemon
+      - run: cp android/app/build/outputs/apk/release/app-release.apk Eliminacode-Operatore-v0.5.0.apk
       - uses: actions/upload-artifact@v4
-        with:
-          name: Eliminacode-Operatore-RELEASE-APK
-          path: apps/operator-tablet/Eliminacode-Operatore-RELEASE.apk
-          if-no-files-found: error
+        with: { name: Eliminacode-Operatore-v0.5.0-APK, path: apps/operator-tablet/Eliminacode-Operatore-v0.5.0.apk, if-no-files-found: error }
