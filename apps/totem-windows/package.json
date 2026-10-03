@@ -1,56 +1,7 @@
 {
-  "name": "eliminacode-totem-windows",
-  "version": "0.2.2",
-  "private": true,
-  "type": "module",
-  "main": "dist-electron/main.js",
-  "scripts": {
-    "dev": "concurrently \"vite\" \"tsc -p tsconfig.electron.json --watch\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
-    "build": "tsc -p tsconfig.electron.json && vite build",
-    "start": "electron .",
-    "dist:win": "npm run build && electron-builder --win nsis portable --publish never"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "qrcode": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
-  },
-  "devDependencies": {
-    "@types/node": "latest",
-    "@types/qrcode": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "concurrently": "latest",
-    "typescript": "latest",
-    "wait-on": "latest",
-    "cross-env": "latest",
-    "electron": "latest",
-    "electron-builder": "latest"
-  },
-  "build": {
-    "appId": "com.eliminacode.totem",
-    "productName": "Eliminacode Totem",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "dist-electron/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
-  }
+  "name":"eliminacode-totem-windows","version":"0.4.0","private":true,"type":"module","main":"dist-electron/main.js",
+  "scripts":{"dev":"concurrently \"vite\" \"tsc -p tsconfig.electron.json --watch\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"","build":"tsc -p tsconfig.electron.json && vite build","start":"electron .","dist:win":"npm run build && electron-builder --win nsis portable --publish never"},
+  "dependencies":{"@vitejs/plugin-react":"latest","qrcode":"latest","react":"latest","react-dom":"latest","vite":"latest"},
+  "devDependencies":{"@types/node":"latest","@types/qrcode":"latest","@types/react":"latest","@types/react-dom":"latest","concurrently":"latest","typescript":"latest","wait-on":"latest","cross-env":"latest","electron":"latest","electron-builder":"latest"},
+  "build":{"appId":"com.eliminacode.totem","productName":"Eliminacode Totem","directories":{"output":"release"},"files":["dist/**/*","dist-electron/**/*","package.json"],"win":{"target":["nsis","portable"]},"nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true,"createDesktopShortcut":true,"createStartMenuShortcut":true}}
 }
