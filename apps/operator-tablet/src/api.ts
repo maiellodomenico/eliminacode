@@ -1,4 +1,9 @@
-export type QueueItem={ticketId:string;number:string;hasOrder:boolean;order?:string;status:'WAITING'|'CALLED'};
-let q:QueueItem[]=[{ticketId:'1',number:'S041',hasOrder:false,status:'WAITING'},{ticketId:'2',number:'S042',hasOrder:true,order:'200 g prosciutto crudo\n300 g mortadella\nNota: affettare sottile',status:'WAITING'},{ticketId:'3',number:'S043',hasOrder:false,status:'WAITING'},{ticketId:'4',number:'S044',hasOrder:true,order:'500 g mozzarella',status:'WAITING'}];
-export async function queue(){return [...q]}
-export async function action(id:string,a:'call'|'serve'|'skip'|'recall'){if(a==='serve'||a==='skip')q=q.filter(x=>x.ticketId!==id);else q=q.map(x=>x.ticketId===id?{...x,status:'CALLED'}:x);return queue()}
+export type QueueItem={ticketId:string;number:string;hasOrder:boolean;order?:string;status:'WAITING'|'CALLED'|'SERVING'};
+const URL=process.env.EXPO_PUBLIC_SUPABASE_URL||'';
+const KEY=process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY||'';
+const DEPARTMENT=process.env.EXPO_PUBLIC_DEPARTMENT_ID||'';
+const DEVICE=process.env.EXPO_PUBLIC_OPERATOR_DEVICE_ID||'';
+const DEVICE_KEY=process.env.EXPO_PUBLIC_OPERATOR_DEVICE_KEY||'';
+async function rpc<T>(fn:string,body:any):Promise<T>{if(!URL||!KEY)throw new Error('Supabase non configurato');const r=await fetch(`${URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());return r.json()}
+export async function queue(){const rows:any[]=await rpc('queue_device',{p_department_id:DEPARTMENT,p_device_id:DEVICE,p_device_key:DEVICE_KEY});return rows.map(x=>({ticketId:x.ticket_id,number:x.number,hasOrder:x.has_order,order:x.order_notes||undefined,status:(x.status==='called'?'CALLED':x.status==='serving'?'SERVING':'WAITING') as QueueItem['status']}))}
+export async function action(id:string,a:'call'|'serve'|'skip'|'recall'){await rpc('ticket_action_device',{p_ticket_id:id,p_action:a,p_device_id:DEVICE,p_device_key:DEVICE_KEY});return queue()}
