@@ -34,3 +34,4 @@ jobs:
           name: Eliminacode-Totem-Windows-EXE
           path: apps/totem-windows/release/*.exe
           if-no-files-found: error
+
