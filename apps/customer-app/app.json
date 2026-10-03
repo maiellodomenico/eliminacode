@@ -1,3 +1,46 @@
 {
-  "expo":{"name":"Eliminacode","slug":"eliminacode-cliente","version":"0.1.0","orientation":"portrait","scheme":"eliminacode","userInterfaceStyle":"light","plugins":["expo-camera","expo-notifications"],"android":{"package":"com.eliminacode.client","intentFilters":[{"action":"VIEW","autoVerify":true,"data":[{"scheme":"https","host":"queue.example.com","pathPrefix":"/claim"},{"scheme":"https","host":"queue.example.com","pathPrefix":"/tap"}],"category":["BROWSABLE","DEFAULT"]}]},"ios":{"bundleIdentifier":"com.eliminacode.client","associatedDomains":["applinks:queue.example.com"]}}
+  "expo": {
+    "name": "Eliminacode",
+    "slug": "eliminacode-cliente",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "scheme": "eliminacode",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-camera",
+      "expo-notifications"
+    ],
+    "android": {
+      "package": "com.eliminacode.client",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "queue.example.com",
+              "pathPrefix": "/claim"
+            },
+            {
+              "scheme": "https",
+              "host": "queue.example.com",
+              "pathPrefix": "/tap"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "versionCode": 2
+    },
+    "ios": {
+      "bundleIdentifier": "com.eliminacode.client",
+      "associatedDomains": [
+        "applinks:queue.example.com"
+      ]
+    }
+  }
 }
