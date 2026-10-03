@@ -2,7 +2,7 @@ import {app,BrowserWindow,ipcMain,shell} from 'electron';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {printTicket} from './printer.js';
-import {loadConfig,saveConfig} from './config.js';
+import {loadConfig,saveConfig} from './config.js'; 
 const __dirname=path.dirname(fileURLToPath(import.meta.url));
 let mainWindow:BrowserWindow|null=null;
 function createWindow(){
