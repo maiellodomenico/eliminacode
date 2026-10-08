@@ -25,8 +25,9 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: npm test
       - run: npm run test:browser
-      - run: npm run test:browser
+      - run: xvfb-run -a npm run test:browser
         env:
+          ELIMINACODE_HEADED: "1"
           ELIMINACODE_BROWSER: webkit
           ELIMINACODE_TEST_OUTPUT: test-output/webkit
       - uses: actions/upload-artifact@v4
