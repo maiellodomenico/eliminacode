@@ -25,6 +25,10 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: npm test
       - run: npm run test:browser
+      - name: Start audio service for WebKit playback
+        run: |
+          sudo apt-get install -y pulseaudio
+          pulseaudio --start --exit-idle-time=-1
       - run: xvfb-run -a npm run test:browser
         env:
           ELIMINACODE_HEADED: "1"
