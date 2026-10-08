@@ -1,9 +1,9 @@
 {
   "name":"eliminacode-server-windows",
-  "version":"1.0.0",
+  "version":"1.0.1",
   "private":true,
   "main":"main.cjs",
-  "scripts":{"start":"electron .","dist:win":"electron-builder --win nsis portable --publish never"},
+  "scripts":{"start":"electron .","test":"node --test test/*.test.cjs","dist:win":"electron-builder --win nsis portable --publish never"},
   "dependencies":{"better-sqlite3":"^11.10.0","express":"^5.1.0","qrcode":"^1.5.4","ws":"^8.18.3"},
   "devDependencies":{"electron":"^38.1.2","electron-builder":"^26.0.12"},
   "build":{"appId":"com.eliminacode.server","productName":"Eliminacode Server","files":["**/*"],"directories":{"output":"release"},"win":{"target":["nsis","portable"]}}

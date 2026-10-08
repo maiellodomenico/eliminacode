@@ -29,12 +29,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Prepare native module for Node.js tests
+        # electron's postinstall may rebuild native modules for Electron;
+        # use the Node ABI for the API tests before packaging rebuilds them.
+        run: npm rebuild better-sqlite3 --runtime=node
+
+      - name: Test server startup and API
+        run: npm test
+
       - name: Build Windows EXE
         run: npm run dist:win
 
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Server-Windows-v1
+          name: Eliminacode-Server-Windows-v1.0.1
           path: apps/server-windows/release/*.exe
           if-no-files-found: error

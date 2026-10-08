@@ -5,6 +5,16 @@ const path = require('path');
 let win;
 let logFile;
 
+const primaryInstance = app.requestSingleInstanceLock();
+if (!primaryInstance) app.quit();
+app.on('second-instance', () => {
+  if (win) {
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+  }
+});
+
 function log(...parts) {
   try {
     const line = `[${new Date().toISOString()}] ${parts.map(x => x instanceof Error ? (x.stack || x.message) : String(x)).join(' ')}\n`;
@@ -19,7 +29,7 @@ process.on('unhandledRejection', err => {
   log('unhandledRejection', err);
 });
 
-app.whenReady().then(async () => {
+if (primaryInstance) app.whenReady().then(async () => {
   const dataDir = app.getPath('userData');
   fs.mkdirSync(dataDir, { recursive: true });
   logFile = path.join(dataDir, 'bootstrap.log');
@@ -64,6 +74,7 @@ app.whenReady().then(async () => {
       'Eliminacode Server - errore di avvio',
       `${err?.message || err}\n\nLog:\n${logFile || 'non disponibile'}`
     );
+    app.quit();
   }
 });
 

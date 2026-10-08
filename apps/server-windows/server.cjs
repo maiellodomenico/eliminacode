@@ -39,7 +39,7 @@ function broadcast(obj){if(!wss)return;const s=JSON.stringify(obj);for(const c o
 function validateDevice(id,key,type){const d=db.prepare('select * from devices where id=? and active=1').get(id);if(!d||d.type!==type||d.device_key_hash!==sha(key))return null;return d}
 async function pushExpo(pushToken,title,body,data={}){if(!pushToken||!String(pushToken).startsWith('ExponentPushToken'))return false;try{const r=await fetch('https://exp.host/--/api/v2/push/send',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({to:pushToken,title,body,sound:'default',data})});return r.ok}catch{return false}}
 
-function startServer(){return new Promise(resolve=>{
+function startServer(){return new Promise((resolve,reject)=>{
  const api=express();api.use(express.json({limit:'1mb'}));api.use(express.static(path.join(__dirname,'public')));
  api.get('/api/health',(q,r)=>r.json({ok:true,mode:'local-first',time:now()}));
  api.get('/api/departments',(q,r)=>r.json(db.prepare('select id,name,prefix from departments where active=1 order by sort_order,name').all()));
@@ -56,12 +56,20 @@ function startServer(){return new Promise(resolve=>{
  api.get('/admin',(q,r)=>r.sendFile(path.join(__dirname,'public','admin.html')));
  function ticketView(id){const t=db.prepare(`select t.*,d.name department_name from tickets t join departments d on d.id=t.department_id where t.id=?`).get(id);if(!t)return null;const ahead=db.prepare("select count(*) c from tickets where department_id=? and status in ('waiting','called') and sequence_no<?").get(t.department_id,t.sequence_no).c;const current=db.prepare("select public_number from tickets where department_id=? and status='called' order by called_at desc limit 1").get(t.department_id);return{ticketId:t.id,number:t.public_number,departmentName:t.department_name,status:t.status,peopleAhead:ahead,currentNumber:current?.public_number||'—',digital:!!t.digital_claimed}}
  const server=http.createServer(api);
- server.on('error', reject);
+ server.once('error', err=>{
+   wss.close();
+   reject(err);
+ });
  wss=new WebSocketServer({server,path:'/ws'});
+ // ws forwards HTTP listen errors to its own error event as well.
+ wss.on('error', reject);
  server.listen(PORT,HOST,()=>{
    const address=server.address();
    const actualPort=typeof address==='object'&&address?address.port:PORT;
-   resolve({port:actualPort});
+   resolve({port:actualPort,close:()=>new Promise((done,fail)=>{
+     for(const client of wss.clients)client.terminate();
+     wss.close(()=>server.close(err=>err?fail(err):done()));
+   })});
  });
  })}
 module.exports={startServer};
