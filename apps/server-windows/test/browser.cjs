@@ -8,8 +8,8 @@ const path=require('node:path');
  const dataDir=fs.mkdtempSync(path.join(os.tmpdir(),'ec-browser-'));
  const output=process.env.ELIMINACODE_TEST_OUTPUT||path.join(__dirname,'../test-output');fs.mkdirSync(output,{recursive:true});
  const info=await startServer({port:0,allowInsecureCustomerTesting:true,host:'127.0.0.1',dataDir});const base=`http://127.0.0.1:${info.port}`;
- const browser=await (process.env.ELIMINACODE_BROWSER==='webkit'?webkit:chromium).launch({headless:true});const contexts=[];const errors=[];
- async function page(width=1280,height=900){const ctx=await browser.newContext({viewport:{width,height}});contexts.push(ctx);const p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));p.setDefaultTimeout(15000);return p;}
+ const browser=await (process.env.ELIMINACODE_BROWSER==='webkit'?webkit:chromium).launch({headless:true});const contexts=[];const errors=[];const pages=[];
+ async function page(width=1280,height=900){const ctx=await browser.newContext({viewport:{width,height}});contexts.push(ctx);const p=await ctx.newPage();pages.push(p);p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')console.error('BROWSER ERROR',m.text());});p.setDefaultTimeout(15000);return p;}
  async function noOverflow(p){assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'page has horizontal overflow: '+p.url());}
  try{
   const admin=await page();await admin.goto(base+'/admin');await admin.locator('#shopName').fill('Mercato Centrale');await admin.locator('#username').fill('direttore');await admin.locator('#password').fill('password-produzione-test');await admin.locator('#confirm').fill('password-produzione-test');await admin.getByRole('button',{name:'Crea e avvia',exact:true}).click();await admin.getByRole('heading',{name:'Panoramica',exact:true}).waitFor();
@@ -29,5 +29,5 @@ const path=require('node:path');
   await noOverflow(phone);await phone.screenshot({path:path.join(output,'ticket-mobile.png'),fullPage:true});await noOverflow(operator);await operator.screenshot({path:path.join(output,'operator-tablet.png'),fullPage:true});
   await noOverflow(totem);await totem.screenshot({path:path.join(output,'totem-desktop.png'),fullPage:true});
   assert.deepEqual(errors,[],'browser errors');console.log('PASS: actual browser setup, departments, pairing, ticket QR, phone order, operator call/recall/serve, display, feedback, NFC link and responsive layout.');
- }finally{for(const ctx of contexts)await ctx.close();await browser.close();await info.close();fs.rmSync(dataDir,{recursive:true,force:true});}
+ }catch(e){for(const p of pages.slice(-2)){console.error('FAILED PAGE',p.url(),await p.locator('body').innerText().catch(()=>''));}throw e;}finally{for(const ctx of contexts)await ctx.close();await browser.close();await info.close();fs.rmSync(dataDir,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

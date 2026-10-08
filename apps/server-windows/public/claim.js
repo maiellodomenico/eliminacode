@@ -35,4 +35,4 @@ async function enablePush(){try{
  await api('/api/push/subscribe','POST',{ticketId,token:claimToken,subscription:subscription.toJSON()});$('pushInfo').textContent='Notifiche attive per questo ticket. Usa la prova per verificarle sul telefono.';$('pushTest').hidden=false;$('pushEnable').textContent='Notifiche attive';
  }catch(e){notice('Notifiche non attivate: '+e.message,true);$('pushEnable').disabled=false;}}
 
-boot().catch(e=>{notice(e.message,true);$('app').innerHTML='<section class="card login"><h1>Ticket non disponibile</h1><p>Inquadra nuovamente il QR o chiedi al personale.</p></section>';});
+boot().catch(e=>{console.error('Ticket initialization failed:',e);notice(e.message,true);$('app').innerHTML='<section class="card login"><h1>Ticket non disponibile</h1><p>Inquadra nuovamente il QR o chiedi al personale.</p></section>';});
