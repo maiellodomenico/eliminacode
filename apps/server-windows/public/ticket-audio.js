@@ -10,7 +10,7 @@ class TicketAudio {
   return Promise.resolve(pending).then(()=>{this.onState('confirm','Senti il suono? Conferma qui sotto per attivare gli avvisi.');return true;},e=>this.failure(e));
  }
  confirm(){this.enabled=true;this.onState('ready','Avvisi sonori attivi mentre questa pagina è visibile.');}
- failure(e){this.enabled=false;this.onState('blocked','Audio non attivato. Premi ▶ nel lettore qui sotto, poi conferma che senti il suono.');return Promise.resolve(false);}
+ failure(e){this.enabled=false;this.onState('blocked','Audio non attivato. Tocca di nuovo “Prova audio”, alza il volume e conferma che senti il suono.');return Promise.resolve(false);}
  async alert(){if(!this.enabled||document.hidden||this.busy)return false;this.busy=true;try{this.player.pause();if(this.player.readyState>0)this.player.currentTime=0;await this.player.play();return true;}catch(e){await this.failure(e);return false;}finally{this.busy=false;}}
  check(){if(this.enabled&&!document.hidden)this.onState('ready','Pagina riaperta: se l’audio si è interrotto, premi “Prova audio” per riattivarlo.');}
 }
