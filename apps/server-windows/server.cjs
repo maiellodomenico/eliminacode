@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 const Database = require('better-sqlite3');
 const QRCode = require('qrcode');
 const { WebSocketServer } = require('ws');
-const VERSION = '1.2.1';
+const VERSION = '1.2.2';
 const {estimateInterval}=require('./wait-times.cjs');
 const {createPush}=require('./push.cjs');
 const hash = x => crypto.createHash('sha256').update(String(x || '')).digest('hex');

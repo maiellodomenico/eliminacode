@@ -1,4 +1,4 @@
-# Eliminacode Windows 1.2.1
+# Eliminacode Windows 1.2.2
 
 Server, totem, operatore e display usano la rete privata del negozio (Wi-Fi o Ethernet). Il cliente usa la propria connessione mobile o qualsiasi rete Internet. Il database e l’amministrazione restano sul PC Windows.
 
@@ -17,7 +17,7 @@ Senza dominio e token configurati, il programma indica chiaramente che l’acces
 
 ## iPhone: audio e notifiche
 
-- Audio: nella pagina ticket premi “Prova audio”, poi “Sì, sento il suono”. Il suono WAV viene riprodotto tramite il lettore multimediale del browser, senza dipendere dalla voce sintetica o da AudioContext; gli avvisi durante l’attesa/chiamata richiedono la pagina visibile e un volume adeguato. Riattivare mentre il numero è già chiamato riproduce l’avviso. Un errore di riproduzione viene mostrato e non viene segnato come avviso consegnato.
+- Audio: nella pagina ticket premi “Prova audio”, poi “Sì, sento il suono”. Il suono usa Web Audio attivato tramite tocco e verificato in esecuzione, con sessione playback su iPhone quando disponibile e file WAV come alternativa sui browser privi di Web Audio; gli avvisi durante l’attesa/chiamata richiedono la pagina visibile e un volume adeguato. Riattivare mentre il numero è già chiamato riproduce l’avviso. Un errore di riproduzione viene mostrato e non viene segnato come avviso consegnato.
 - Notifiche anche a pagina chiusa: usa HTTPS, iOS/iPadOS 16.4 o successivo. Apri il QR in Safari, Condividi → Aggiungi alla schermata Home; riapri dalla Home e premi “Attiva notifiche”. Il manifest conserva il ticket nel collegamento iniziale dell’app. Consenti il permesso richiesto.
 - Premi “Invia notifica di prova” per verificare il telefono. “Accettata dal servizio push” indica la risposta del servizio, non una conferma del dispositivo. Suono delle notifiche, Full immersion e Silenzioso dipendono dalle impostazioni iOS.
 - Sono implementati Service Worker, Web Push cifrato/VAPID persistente, sottoscrizioni protette dal token ticket, avvisi a due/una/zero persone di distanza, chiamata/richiamo, servizio completato e cancellazione/assenza. La coda persistente ritenta gli errori temporanei, scade gli avvisi vecchi e rimuove endpoint scaduti. Non viene richiesto di inviare push invisibili.

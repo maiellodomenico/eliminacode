@@ -25,7 +25,7 @@ test('public gateway isolation, HTTPS QR, push authentication, dispatch and dura
  await post('/api/push/subscribe',{ticketId:t2.ticketId,token:'wrong',subscription},{publicAccess:true,expected:403});
  await post('/api/push/subscribe',{ticketId:t2.ticketId,token,subscription:{...subscription,endpoint:'https://127.0.0.1/private'}},{publicAccess:true,expected:400});
  await post('/api/push/subscribe',{ticketId:t2.ticketId,token,subscription},{publicAccess:true});
- await new Promise(r=>setTimeout(r,25));assert.equal(sent.length,1);assert.match(sent[0].body,/1 persone/);
+ await new Promise(r=>setTimeout(r,25));assert.equal(sent.length,1);assert.match(sent[0].body,/Manca un numero al tuo turno/);
  await post('/api/push/subscribe',{ticketId:t2.ticketId,token,subscription},{publicAccess:true});await new Promise(r=>setTimeout(r,25));assert.equal(sent.length,1,'duplicate subscribe must not repeat push');
  const opPair=await post('/api/devices',{type:'operator',departmentId:'salumeria'}),op=await post('/api/pair',{code:opPair.pairingCode,role:'operator'});
  await post('/api/operator/action',{action:'next'},{auth:op});await post('/api/operator/action',{action:'serve',ticketId:t1.ticketId},{auth:op});await post('/api/operator/action',{action:'next'},{auth:op});await new Promise(r=>setTimeout(r,25));assert.ok(sent.some(p=>p.body.includes('È il tuo turno')));
