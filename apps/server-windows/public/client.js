@@ -1,0 +1,3 @@
+'use strict';
+async function loadTickets(){const tickets=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key.startsWith('ec-ticket-'))tickets.push([key.slice(10),localStorage.getItem(key)]);}for(const [id,token] of tickets){try{const t=await api('/api/tickets/'+encodeURIComponent(id),'GET',undefined,{deviceKey:token,deviceId:''});const a=document.createElement('a');a.className='deviceCard';a.href='/claim?ticket='+encodeURIComponent(id);a.textContent=t.number+' · '+t.departmentName+' · '+(labels[t.status]||t.status);$('tickets').append(a);}catch{}}}
+loadTickets().catch(e=>notice(e.message,true));

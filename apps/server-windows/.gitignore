@@ -3,3 +3,5 @@ release/
 test-output/
 *.sqlite*
 bootstrap.log
+
+vendor/

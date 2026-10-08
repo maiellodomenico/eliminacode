@@ -1,11 +1,11 @@
 {
   "name": "eliminacode-server-windows",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "test": "node --test test/startup.test.cjs",
+    "test": "node --test test/*.test.cjs",
     "dist:win": "electron-builder --win nsis portable --publish never",
     "test:browser": "node test/browser.cjs"
   },
@@ -13,6 +13,7 @@
     "better-sqlite3": "^11.10.0",
     "express": "^5.1.0",
     "qrcode": "^1.5.4",
+    "web-push": "^3.6.7",
     "ws": "^8.18.3"
   },
   "devDependencies": {
@@ -30,7 +31,10 @@
       "public/**/*",
       "assets/**/*",
       "README.md",
-      "package.json"
+      "package.json",
+      "wait-times.cjs",
+      "push.cjs",
+      "tunnel.cjs"
     ],
     "directories": {
       "output": "release"
@@ -47,6 +51,12 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    }
+    },
+    "extraResources": [
+      {
+        "from": "vendor/cloudflared.exe",
+        "to": "cloudflared.exe"
+      }
+    ]
   }
 }

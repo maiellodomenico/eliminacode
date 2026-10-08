@@ -28,7 +28,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Eliminacode-UI-verificata-v1.1.0
+          name: Eliminacode-UI-verificata-v1.2.0
           path: apps/server-windows/test-output/
           if-no-files-found: ignore
 
@@ -60,6 +60,14 @@ jobs:
       - name: Test server startup and API
         run: npm test
 
+      - name: Bundle verified outbound tunnel
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force vendor | Out-Null
+          Invoke-WebRequest "https://github.com/cloudflare/cloudflared/releases/download/2026.10.0/cloudflared-windows-amd64.exe" -OutFile vendor/cloudflared.exe
+          $digest = (Get-FileHash vendor/cloudflared.exe -Algorithm SHA256).Hash.ToLower()
+          if ($digest -ne "86aee4017b26625cee8484c113558f48effa4cd47f7aa05fcf425604e5d2b23c") { throw "Tunnel binary integrity check failed" }
+
       - name: Build Windows EXE
         run: npm run dist:win
 
@@ -77,6 +85,6 @@ jobs:
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Suite-Windows-v1.1.0
+          name: Eliminacode-Suite-Windows-v1.2.0
           path: apps/server-windows/release/*.exe
           if-no-files-found: error

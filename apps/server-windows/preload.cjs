@@ -1,6 +1,9 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('host',Object.freeze({
  openRole:url=>ipcRenderer.invoke('open-role',url),
+ tunnelState:()=>ipcRenderer.invoke('tunnel-state'),
+ tunnelSave:token=>ipcRenderer.invoke('tunnel-save',token),
+ tunnelRemove:()=>ipcRenderer.invoke('tunnel-remove'),
  printers:()=>ipcRenderer.invoke('list-printers'),
  printerSettings:()=>ipcRenderer.invoke('printer-settings'),
  printTicket:ticket=>ipcRenderer.invoke('print-ticket',ticket),

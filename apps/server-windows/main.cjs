@@ -1,7 +1,7 @@
-const { app, BrowserWindow, dialog, ipcMain, shell, Menu, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, shell, Menu, Tray, nativeImage, safeStorage } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
-let win, tray, info, quitting=false, logFile, printing=false;
+let win, tray, info, quitting=false, logFile, printing=false, tunnel;
 const roleWindows = new Set();
 const primaryInstance = app.requestSingleInstanceLock();
 if (!primaryInstance) app.quit();
@@ -36,6 +36,9 @@ async function print(data){
 }
 function registerIPC(){
  ipcMain.handle('open-role',async(event,url)=>{await requireAdmin(event);const parsed=new URL(url);if(!['/totem','/operator','/display'].includes(parsed.pathname)||!/^[0-9]{8}$/.test(parsed.searchParams.get('code')||''))throw new Error('Collegamento postazione non valido');const role=parsed.pathname.slice(1),code=parsed.searchParams.get('code');const child=new BrowserWindow({width:1280,height:900,autoHideMenuBar:true,fullscreen:role!=='operator',webPreferences:{partition:'persist:ec-'+role+'-'+code,preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});roleWindows.add(child);child.setMenu(null);guardWindow(child);child.on('closed',()=>roleWindows.delete(child));await child.loadURL(`http://127.0.0.1:${info.port}${parsed.pathname}?code=${code}`);return true;});
+ ipcMain.handle('tunnel-state',async event=>{await requireAdmin(event);return tunnel.state();});
+ ipcMain.handle('tunnel-save',async(event,value)=>{await requireAdmin(event);return tunnel.save(value);});
+ ipcMain.handle('tunnel-remove',async event=>{await requireAdmin(event);return tunnel.remove();});
  ipcMain.handle('list-printers',async event=>{await requireAdmin(event);return event.sender.getPrintersAsync();});
  ipcMain.handle('printer-settings',async event=>{await requireAdmin(event);await shell.openExternal('ms-settings:printers');return true;});
  ipcMain.handle('print-ticket',async(event,{ticketId,auth})=>{if(!trusted(event)||!info.deviceFor(auth?.deviceId,auth?.deviceKey,'totem'))throw new Error('Postazione non autorizzata');return print(await info.printable(ticketId,auth.deviceId));});
@@ -54,12 +57,13 @@ if(primaryInstance)app.whenReady().then(async()=>{
     await probe.loadURL(`http://127.0.0.1:${info.port}/admin`);
     let rendered=false;for(let attempt=0;attempt<40;attempt++){if(await probe.webContents.executeJavaScript("document.body.innerText.includes('Configura il tuo negozio')")){rendered=true;break;}await new Promise(resolve=>setTimeout(resolve,100));}
     probe.destroy();if(!rendered)throw new Error('Packaged administrator page did not render');
-    await info.close();info=null;fs.writeFileSync(path.join(dataDir,'smoke-ok.txt'),'Eliminacode 1.1.0 · packaged Electron + SQLite + administrator rendering OK');app.exit(0);return;
+    await info.close();info=null;fs.writeFileSync(path.join(dataDir,'smoke-ok.txt'),'Eliminacode 1.2.0 · packaged Electron + SQLite + administrator rendering OK');app.exit(0);return;
   }
+  tunnel=require('./tunnel.cjs').createTunnel({dataDir,safeStorage,executable:app.isPackaged?path.join(process.resourcesPath,'cloudflared.exe'):path.join(__dirname,'vendor','cloudflared.exe')});tunnel.start();
   Menu.setApplicationMenu(null);registerIPC();
   tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'assets','icon.png')));tray.setToolTip('Eliminacode Server · attivo');tray.setContextMenu(Menu.buildFromTemplate([{label:'Apri amministrazione',click:showAdmin},{label:'Server attivo · porta '+info.port,enabled:false},{type:'separator'},{label:'Arresta server',click:()=>{dialog.showMessageBox(win,{type:'question',buttons:['Annulla','Arresta'],defaultId:0,cancelId:0,message:'Arrestare il server?',detail:'Totem, tablet e display non potranno più gestire le code.'}).then(({response})=>{if(response===1){quitting=true;app.quit();}});}}]));tray.on('double-click',showAdmin);createAdmin();if(process.argv.includes('--hidden'))win.hide();
  }catch(err){log('STARTUP ERROR',err);if(!smoke)dialog.showErrorBox('Eliminacode · avvio non riuscito',`${err.code==='EADDRINUSE'?'La porta è già occupata da un altro programma. Chiudi la vecchia versione di Eliminacode.':err.message}\n\nLog: ${logFile}`);app.exit(1);}
 });
 let closing=false;
-app.on('before-quit',event=>{quitting=true;if(info&&!closing){event.preventDefault();closing=true;for(const w of roleWindows)w.destroy();info.close().catch(log).finally(()=>{info=null;app.quit();});}});
+app.on('before-quit',event=>{quitting=true;if(info&&!closing){event.preventDefault();closing=true;tunnel?.stop();for(const w of roleWindows)w.destroy();info.close().catch(log).finally(()=>{info=null;app.quit();});}});
 app.on('window-all-closed',()=>{});
