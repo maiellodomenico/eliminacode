@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express=require('express');
 const http=require('http');
 const path=require('path');
@@ -9,7 +10,15 @@ const {WebSocketServer}=require('ws');
 const PORT=Number(process.env.ELIMINACODE_PORT||8787);
 const HOST=process.env.ELIMINACODE_HOST||'0.0.0.0';
 const PUBLIC_BASE=(process.env.ELIMINACODE_PUBLIC_BASE||'http://127.0.0.1:8787').replace(/\/$/,'');
-const db=new Database(path.join(__dirname,'eliminacode.sqlite'));
+const DATA_DIR =
+  process.env.ELIMINACODE_DATA_DIR ||
+  path.join(process.env.LOCALAPPDATA || process.cwd(), 'Eliminacode Server');
+
+fs.mkdirSync(DATA_DIR, { recursive: true });
+
+const db = new Database(
+  path.join(DATA_DIR, 'eliminacode.sqlite')
+);
 db.pragma('journal_mode = WAL');
 
 db.exec(`
