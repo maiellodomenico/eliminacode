@@ -10,7 +10,30 @@ name: Build Eliminacode Server Windows
       - ".github/workflows/build-server-windows.yml"
 
 jobs:
+  browser:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/server-windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm rebuild better-sqlite3 --runtime=node
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Eliminacode-UI-verificata-v1.1.0
+          path: apps/server-windows/test-output/
+          if-no-files-found: ignore
+
   build:
+    needs: browser
     runs-on: windows-latest
 
     defaults:
@@ -27,7 +50,7 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Prepare native module for Node.js tests
         # electron's postinstall may rebuild native modules for Electron;
@@ -40,9 +63,20 @@ jobs:
       - name: Build Windows EXE
         run: npm run dist:win
 
+      - name: Verify packaged Windows application
+        shell: pwsh
+        run: |
+          $env:ELIMINACODE_DATA_DIR = Join-Path $env:RUNNER_TEMP "eliminacode-smoke"
+          $appPath = Join-Path (Get-Location) "release/win-unpacked/Eliminacode Server.exe"
+          $process = Start-Process -FilePath $appPath -ArgumentList "--smoke-test" -PassThru
+          if (-not $process.WaitForExit(60000)) { $process.Kill(); throw "Packaged application did not exit" }
+          if ($process.ExitCode -ne 0) { Get-Content "$env:ELIMINACODE_DATA_DIR/bootstrap.log"; throw "Packaged application startup failed" }
+          if (-not (Test-Path "$env:ELIMINACODE_DATA_DIR/smoke-ok.txt")) { throw "Missing packaged smoke-test result" }
+          Get-Content "$env:ELIMINACODE_DATA_DIR/smoke-ok.txt"
+
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Server-Windows-v1.0.1
+          name: Eliminacode-Suite-Windows-v1.1.0
           path: apps/server-windows/release/*.exe
           if-no-files-found: error
