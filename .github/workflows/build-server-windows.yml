@@ -37,7 +37,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Eliminacode-UI-verificata-v1.2.2
+          name: Eliminacode-UI-verificata-v1.2.3
           path: apps/server-windows/test-output/
           if-no-files-found: ignore
 
@@ -94,6 +94,6 @@ jobs:
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Eliminacode-Suite-Windows-v1.2.2
+          name: Eliminacode-Suite-Windows-v1.2.3
           path: apps/server-windows/release/*.exe
           if-no-files-found: error

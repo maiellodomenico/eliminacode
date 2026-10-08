@@ -57,7 +57,7 @@ if(primaryInstance)app.whenReady().then(async()=>{
     await probe.loadURL(`http://127.0.0.1:${info.port}/admin`);
     let rendered=false;for(let attempt=0;attempt<40;attempt++){if(await probe.webContents.executeJavaScript("document.body.innerText.includes('Configura il tuo negozio')")){rendered=true;break;}await new Promise(resolve=>setTimeout(resolve,100));}
     probe.destroy();if(!rendered)throw new Error('Packaged administrator page did not render');
-    await info.close();info=null;fs.writeFileSync(path.join(dataDir,'smoke-ok.txt'),'Eliminacode 1.2.2 · packaged Electron + SQLite + administrator rendering OK');app.exit(0);return;
+    await info.close();info=null;fs.writeFileSync(path.join(dataDir,'smoke-ok.txt'),'Eliminacode 1.2.3 · packaged Electron + SQLite + administrator rendering OK');app.exit(0);return;
   }
   tunnel=require('./tunnel.cjs').createTunnel({dataDir,safeStorage,executable:app.isPackaged?path.join(process.resourcesPath,'cloudflared.exe'):path.join(__dirname,'vendor','cloudflared.exe')});tunnel.start();
   Menu.setApplicationMenu(null);registerIPC();

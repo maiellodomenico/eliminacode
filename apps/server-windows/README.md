@@ -1,4 +1,4 @@
-# Eliminacode Windows 1.2.2
+# Eliminacode Windows 1.2.3
 
 Server, totem, operatore e display usano la rete privata del negozio (Wi-Fi o Ethernet). Il cliente usa la propria connessione mobile o qualsiasi rete Internet. Il database e l’amministrazione restano sul PC Windows.
 
@@ -17,7 +17,7 @@ Senza dominio e token configurati, il programma indica chiaramente che l’acces
 
 ## iPhone: audio e notifiche
 
-- Audio: nella pagina ticket premi “Prova audio”, poi “Sì, sento il suono”. Il suono usa Web Audio attivato tramite tocco e verificato in esecuzione, con sessione playback su iPhone quando disponibile e file WAV come alternativa sui browser privi di Web Audio; gli avvisi durante l’attesa/chiamata richiedono la pagina visibile e un volume adeguato. Riattivare mentre il numero è già chiamato riproduce l’avviso. Un errore di riproduzione viene mostrato e non viene segnato come avviso consegnato.
+- Audio: nella pagina ticket premi “Prova voce”, poi “Sì, sento la voce”. Il suono usa Web Audio attivato tramite tocco e verificato in esecuzione, con sessione playback su iPhone quando disponibile e file WAV come alternativa sui browser privi di Web Audio; gli avvisi durante l’attesa/chiamata richiedono la pagina visibile e un volume adeguato. Riattivare mentre il numero è già chiamato riproduce l’avviso. Un errore di riproduzione viene mostrato e non viene segnato come avviso consegnato.
 - Notifiche anche a pagina chiusa: usa HTTPS, iOS/iPadOS 16.4 o successivo. Apri il QR in Safari, Condividi → Aggiungi alla schermata Home; riapri dalla Home e premi “Attiva notifiche”. Il manifest conserva il ticket nel collegamento iniziale dell’app. Consenti il permesso richiesto.
 - Premi “Invia notifica di prova” per verificare il telefono. “Accettata dal servizio push” indica la risposta del servizio, non una conferma del dispositivo. Suono delle notifiche, Full immersion e Silenzioso dipendono dalle impostazioni iOS.
 - Sono implementati Service Worker, Web Push cifrato/VAPID persistente, sottoscrizioni protette dal token ticket, avvisi a due/una/zero persone di distanza, chiamata/richiamo, servizio completato e cancellazione/assenza. La coda persistente ritenta gli errori temporanei, scade gli avvisi vecchi e rimuove endpoint scaduti. Non viene richiesto di inviare push invisibili.
@@ -41,3 +41,5 @@ Le precedenti app APK collegate a Supabase non sono integrate con questo server:
 Node 22: `npm ci`, `npm rebuild better-sqlite3 --runtime=node`, `npm test`. Browser: `npx playwright install --with-deps chromium`, `npm run test:browser`. La pipeline verifica API/SQLite, gateway pubblico, VAPID e dispatch push con trasporto controllato, tempi, flusso browser e interfacce responsive. Le prove automatiche non attestano la consegna Apple su hardware reale.
 
 La pipeline Windows include il connettore ufficiale verificato, genera Setup e portable e avvia l’EXE compilato per controllare Electron, SQLite e rendering amministratore. Gli installer non sono firmati con un certificato commerciale. Avvio rapido temporaneo “trycloudflare” non utilizzato: per i clienti serve un hostname stabile.
+
+Gli avvisi a pagina aperta mostrano un banner e pronunciano il reparto con uno o due numeri davanti, prossimo e chiamata. Le frasi per Salumeria, Macelleria, Panetteria, Pescheria, Pasticceria, Gastronomia e Ortofrutta sono registrazioni sintetiche italiane generate con eSpeak NG 1.51, incluse in turn-voice.mp3 e indicizzate da turn-voice.json. Per nomi personalizzati si usa la voce italiana del browser, verificata dalla prova vocale. La conferma è richiesta dopo la frase completa; un errore disattiva gli avvisi vocali.

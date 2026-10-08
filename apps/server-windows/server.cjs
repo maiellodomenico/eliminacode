@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 const Database = require('better-sqlite3');
 const QRCode = require('qrcode');
 const { WebSocketServer } = require('ws');
-const VERSION = '1.2.2';
+const VERSION = '1.2.3';
 const {estimateInterval}=require('./wait-times.cjs');
 const {createPush}=require('./push.cjs');
 const hash = x => crypto.createHash('sha256').update(String(x || '')).digest('hex');
@@ -290,7 +290,7 @@ async function startServer(options = {}) {
   const gateway=http.createServer((req,res)=>{
     req.customerGateway=true;
     const pathname=new URL(req.url,'http://localhost').pathname;
-    const read=['/claim','/tap','/client','/claim.html','/tap.html','/client.html','/claim.js','/ticket-audio.js','/turn-alert.wav','/tap.js','/client.js','/common.js','/style.css','/sw.js','/manifest.webmanifest','/client-icon.png','/client-icon-512.png','/api/push/config','/api/customer/health'];
+    const read=['/claim','/tap','/client','/claim.html','/tap.html','/client.html','/claim.js','/ticket-audio.js','/turn-alert.wav','/turn-voice.mp3','/turn-voice.json','/tap.js','/client.js','/common.js','/style.css','/sw.js','/manifest.webmanifest','/client-icon.png','/client-icon-512.png','/api/push/config','/api/customer/health'];
     const write=['/api/claim','/api/order','/api/feedback','/api/tap/claim','/api/push/subscribe','/api/push/test','/api/push/unsubscribe'];
     const allowed=(['GET','HEAD'].includes(req.method)&&(read.includes(pathname)||/^\/api\/tickets\/[a-zA-Z0-9-]+$/.test(pathname)))||(req.method==='POST'&&write.includes(pathname));
     if(!allowed){res.writeHead(403,{'Content-Type':'application/json'});return res.end(JSON.stringify({error:'Accesso riservato alla rete interna'}));}

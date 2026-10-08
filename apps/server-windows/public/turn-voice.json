@@ -1,0 +1,147 @@
+{
+  "test": {
+    "offset": 0.0,
+    "duration": 4.545578231292517,
+    "text": "Avvisi vocali attivi. Manca un numero al tuo turno in Salumeria."
+  },
+  "salumeria-ahead-1": {
+    "offset": 4.695555555555556,
+    "duration": 2.773469387755102,
+    "text": "Manca un numero al tuo turno in salumeria."
+  },
+  "salumeria-ahead-2": {
+    "offset": 7.619002267573697,
+    "duration": 2.949931972789116,
+    "text": "Mancano due numeri al tuo turno in salumeria."
+  },
+  "salumeria-next": {
+    "offset": 10.71891156462585,
+    "duration": 3.909750566893424,
+    "text": "Sei il prossimo in salumeria. Preparati al tuo turno."
+  },
+  "salumeria-called": {
+    "offset": 14.778639455782313,
+    "duration": 3.4328344671201814,
+    "text": "È il tuo turno in salumeria. Recati al banco."
+  },
+  "macelleria-ahead-1": {
+    "offset": 18.361451247165533,
+    "duration": 2.8901133786848074,
+    "text": "Manca un numero al tuo turno in macelleria."
+  },
+  "macelleria-ahead-2": {
+    "offset": 21.40154195011338,
+    "duration": 3.066938775510204,
+    "text": "Mancano due numeri al tuo turno in macelleria."
+  },
+  "macelleria-next": {
+    "offset": 24.61845804988662,
+    "duration": 4.024172335600907,
+    "text": "Sei il prossimo in macelleria. Preparati al tuo turno."
+  },
+  "macelleria-called": {
+    "offset": 28.792607709750566,
+    "duration": 3.5346485260770977,
+    "text": "È il tuo turno in macelleria. Recati al banco."
+  },
+  "panetteria-ahead-1": {
+    "offset": 32.4772335600907,
+    "duration": 2.8834467120181406,
+    "text": "Manca un numero al tuo turno in panetteria."
+  },
+  "panetteria-ahead-2": {
+    "offset": 35.510657596371885,
+    "duration": 3.0601814058956918,
+    "text": "Mancano due numeri al tuo turno in panetteria."
+  },
+  "panetteria-next": {
+    "offset": 38.72081632653061,
+    "duration": 4.02031746031746,
+    "text": "Sei il prossimo in panetteria. Preparati al tuo turno."
+  },
+  "panetteria-called": {
+    "offset": 42.89111111111111,
+    "duration": 3.573605442176871,
+    "text": "È il tuo turno in panetteria. Recati al banco."
+  },
+  "pescheria-ahead-1": {
+    "offset": 46.61469387755102,
+    "duration": 2.771609977324263,
+    "text": "Manca un numero al tuo turno in pescheria."
+  },
+  "pescheria-ahead-2": {
+    "offset": 49.53628117913832,
+    "duration": 2.9485714285714284,
+    "text": "Mancano due numeri al tuo turno in pescheria."
+  },
+  "pescheria-next": {
+    "offset": 52.63482993197279,
+    "duration": 3.896326530612245,
+    "text": "Sei il prossimo in pescheria. Preparati al tuo turno."
+  },
+  "pescheria-called": {
+    "offset": 56.68113378684807,
+    "duration": 3.44,
+    "text": "È il tuo turno in pescheria. Recati al banco."
+  },
+  "pasticceria-ahead-1": {
+    "offset": 60.27111111111111,
+    "duration": 3.0017233560090704,
+    "text": "Manca un numero al tuo turno in pasticceria."
+  },
+  "pasticceria-ahead-2": {
+    "offset": 63.42281179138322,
+    "duration": 3.17827664399093,
+    "text": "Mancano due numeri al tuo turno in pasticceria."
+  },
+  "pasticceria-next": {
+    "offset": 66.75106575963719,
+    "duration": 4.258004535147392,
+    "text": "Sei il prossimo in pasticceria. Preparati al tuo turno."
+  },
+  "pasticceria-called": {
+    "offset": 71.15904761904761,
+    "duration": 3.6677551020408163,
+    "text": "È il tuo turno in pasticceria. Recati al banco."
+  },
+  "gastronomia-ahead-1": {
+    "offset": 74.97678004535148,
+    "duration": 2.89578231292517,
+    "text": "Manca un numero al tuo turno in gastronomia."
+  },
+  "gastronomia-ahead-2": {
+    "offset": 78.02253968253969,
+    "duration": 3.072199546485261,
+    "text": "Mancano due numeri al tuo turno in gastronomia."
+  },
+  "gastronomia-next": {
+    "offset": 81.24471655328799,
+    "duration": 4.024625850340136,
+    "text": "Sei il prossimo in gastronomia. Preparati al tuo turno."
+  },
+  "gastronomia-called": {
+    "offset": 85.41931972789115,
+    "duration": 3.579138321995465,
+    "text": "È il tuo turno in gastronomia. Recati al banco."
+  },
+  "ortofrutta-ahead-1": {
+    "offset": 89.14843537414966,
+    "duration": 2.9436734693877553,
+    "text": "Manca un numero al tuo turno in ortofrutta."
+  },
+  "ortofrutta-ahead-2": {
+    "offset": 92.24208616780045,
+    "duration": 3.1077551020408163,
+    "text": "Mancano due numeri al tuo turno in ortofrutta."
+  },
+  "ortofrutta-next": {
+    "offset": 95.49981859410431,
+    "duration": 4.076643990929705,
+    "text": "Sei il prossimo in ortofrutta. Preparati al tuo turno."
+  },
+  "ortofrutta-called": {
+    "offset": 99.72643990929706,
+    "duration": 3.5867120181405894,
+    "text": "È il tuo turno in ortofrutta. Recati al banco."
+  }
+}

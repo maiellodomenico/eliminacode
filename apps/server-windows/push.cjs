@@ -22,7 +22,7 @@ function createPush(db,setting,setSetting,view,{send}={}) {
     db.prepare("DELETE FROM push_subscriptions WHERE ticket_id IN (SELECT id FROM tickets WHERE status NOT IN ('waiting','called') AND COALESCE(served_at,skipped_at,created_at)<?)").run(new Date(Date.now()-86400000).toISOString());
     const subscriptions=db.prepare("SELECT s.*,t.*,s.id subscription_id,d.name department_name FROM push_subscriptions s JOIN tickets t ON t.id=s.ticket_id JOIN departments d ON d.id=t.department_id WHERE t.status IN ('waiting','called') OR (t.status IN ('served','cancelled','skipped') AND COALESCE(t.served_at,t.skipped_at,t.created_at)>?)").all(new Date(Date.now()-300000).toISOString());
     for(const t of subscriptions){const s={id:t.subscription_id};const v=view({...t,id:t.ticket_id});let stage=t.status,message;
-      if(t.status==='waiting'){if(v.peopleAhead>2)continue;stage='ahead-'+v.peopleAhead;message=v.peopleAhead===1?'Manca un numero al tuo turno. Avvicinati al reparto.':v.peopleAhead?`Mancano ${v.peopleAhead} numeri al tuo turno. Avvicinati al reparto.`:'Sei il prossimo. Avvicinati al reparto.';}
+      if(t.status==='waiting'){if(v.peopleAhead>2)continue;stage='ahead-'+v.peopleAhead;message=v.peopleAhead===1?`Manca un numero al tuo turno in ${t.department_name}.`:v.peopleAhead?`Mancano ${v.peopleAhead===2?'due':v.peopleAhead} numeri al tuo turno in ${t.department_name}.`:'Sei il prossimo. Avvicinati al reparto.';}
       else if(t.status==='called'){stage='called-'+t.called_at;message='È il tuo turno! Recati al banco.';}
       else if(t.status==='served')message='Servizio completato. Tocca per lasciare una valutazione.';
       else message='Il ticket è '+(t.status==='skipped'?'stato segnato come assente.':'stato annullato.');
