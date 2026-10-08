@@ -1,7 +1,7 @@
-const fs = require('fs');
 const express=require('express');
 const http=require('http');
 const path=require('path');
+const fs=require('fs');
 const crypto=require('crypto');
 const Database=require('better-sqlite3');
 const QRCode=require('qrcode');
@@ -10,15 +10,9 @@ const {WebSocketServer}=require('ws');
 const PORT=Number(process.env.ELIMINACODE_PORT||8787);
 const HOST=process.env.ELIMINACODE_HOST||'0.0.0.0';
 const PUBLIC_BASE=(process.env.ELIMINACODE_PUBLIC_BASE||'http://127.0.0.1:8787').replace(/\/$/,'');
-const DATA_DIR =
-  process.env.ELIMINACODE_DATA_DIR ||
-  path.join(process.env.LOCALAPPDATA || process.cwd(), 'Eliminacode Server');
-
-fs.mkdirSync(DATA_DIR, { recursive: true });
-
-const db = new Database(
-  path.join(DATA_DIR, 'eliminacode.sqlite')
-);
+const DATA_DIR=process.env.ELIMINACODE_DATA_DIR||path.join(process.env.LOCALAPPDATA||process.cwd(),'Eliminacode Server');
+fs.mkdirSync(DATA_DIR,{recursive:true});
+const db=new Database(path.join(DATA_DIR,'eliminacode.sqlite'));
 db.pragma('journal_mode = WAL');
 
 db.exec(`
@@ -61,6 +55,13 @@ function startServer(){return new Promise(resolve=>{
  api.post('/api/feedback',(q,r)=>{const {ticketId,rating}=q.body||{};const t=db.prepare('select * from tickets where id=? and digital_claimed=1').get(ticketId);if(!t)return r.status(404).json({error:'not_eligible'});event(ticketId,'feedback',{rating});r.json({ok:true})});
  api.get('/admin',(q,r)=>r.sendFile(path.join(__dirname,'public','admin.html')));
  function ticketView(id){const t=db.prepare(`select t.*,d.name department_name from tickets t join departments d on d.id=t.department_id where t.id=?`).get(id);if(!t)return null;const ahead=db.prepare("select count(*) c from tickets where department_id=? and status in ('waiting','called') and sequence_no<?").get(t.department_id,t.sequence_no).c;const current=db.prepare("select public_number from tickets where department_id=? and status='called' order by called_at desc limit 1").get(t.department_id);return{ticketId:t.id,number:t.public_number,departmentName:t.department_name,status:t.status,peopleAhead:ahead,currentNumber:current?.public_number||'—',digital:!!t.digital_claimed}}
- const server=http.createServer(api);wss=new WebSocketServer({server,path:'/ws'});server.listen(PORT,HOST,()=>resolve({port:PORT}));
+ const server=http.createServer(api);
+ server.on('error', reject);
+ wss=new WebSocketServer({server,path:'/ws'});
+ server.listen(PORT,HOST,()=>{
+   const address=server.address();
+   const actualPort=typeof address==='object'&&address?address.port:PORT;
+   resolve({port:actualPort});
+ });
  })}
 module.exports={startServer};

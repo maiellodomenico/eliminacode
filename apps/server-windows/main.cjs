@@ -1,26 +1,70 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
+const fs = require('fs');
 const path = require('path');
 
 let win;
+let logFile;
+
+function log(...parts) {
+  try {
+    const line = `[${new Date().toISOString()}] ${parts.map(x => x instanceof Error ? (x.stack || x.message) : String(x)).join(' ')}\n`;
+    if (logFile) fs.appendFileSync(logFile, line, 'utf8');
+  } catch {}
+}
+
+process.on('uncaughtException', err => {
+  log('uncaughtException', err);
+});
+process.on('unhandledRejection', err => {
+  log('unhandledRejection', err);
+});
 
 app.whenReady().then(async () => {
-  app.setLoginItemSettings({ openAtLogin: true });
+  const dataDir = app.getPath('userData');
+  fs.mkdirSync(dataDir, { recursive: true });
+  logFile = path.join(dataDir, 'bootstrap.log');
+  log('APP READY');
+  log('userData=', dataDir);
 
-  process.env.ELIMINACODE_DATA_DIR = app.getPath('userData');
+  try {
+    process.env.ELIMINACODE_DATA_DIR = dataDir;
+    process.env.ELIMINACODE_HOST = '127.0.0.1';
 
-  const { startServer } = require('./server.cjs');
-  const info = await startServer();
+    const { startServer } = require('./server.cjs');
+    log('server module loaded');
 
-  win = new BrowserWindow({
-    width: 1280,
-    height: 820,
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false
-    }
-  });
+    const info = await startServer();
+    log('server started on port', info.port);
 
-  await win.loadURL(`http://127.0.0.1:${info.port}/admin`);
+    win = new BrowserWindow({
+      width: 1280,
+      height: 820,
+      show: true,
+      backgroundColor: '#f3f7f4',
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false
+      }
+    });
+
+    win.on('closed', () => { win = null; });
+    win.webContents.on('did-fail-load', (_event, code, desc, url) => {
+      log('did-fail-load', code, desc, url);
+    });
+
+    const url = `http://127.0.0.1:${info.port}/admin`;
+    log('loading', url);
+    await win.loadURL(url);
+    log('admin loaded');
+
+    app.setLoginItemSettings({ openAtLogin: true });
+  } catch (err) {
+    log('STARTUP ERROR', err);
+    dialog.showErrorBox(
+      'Eliminacode Server - errore di avvio',
+      `${err?.message || err}\n\nLog:\n${logFile || 'non disponibile'}`
+    );
+  }
 });
 
 app.on('window-all-closed', () => {
