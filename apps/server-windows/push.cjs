@@ -19,7 +19,8 @@ function createPush(db,setting,setSetting,view,{send}={}) {
     db.prepare('INSERT OR IGNORE INTO push_outbox(subscription_id,stage,payload,next_at,expires_at) VALUES(?,?,?,?,?)').run(s.id,stage,JSON.stringify(payload),Date.now(),Date.now()+300000);
   }
   function sweep() {
-    const subscriptions=db.prepare("SELECT s.*,t.*,s.id subscription_id,d.name department_name FROM push_subscriptions s JOIN tickets t ON t.id=s.ticket_id JOIN departments d ON d.id=t.department_id WHERE t.status IN ('waiting','called','served','cancelled','skipped')").all();
+    db.prepare("DELETE FROM push_subscriptions WHERE ticket_id IN (SELECT id FROM tickets WHERE status NOT IN ('waiting','called') AND COALESCE(served_at,skipped_at,created_at)<?)").run(new Date(Date.now()-86400000).toISOString());
+    const subscriptions=db.prepare("SELECT s.*,t.*,s.id subscription_id,d.name department_name FROM push_subscriptions s JOIN tickets t ON t.id=s.ticket_id JOIN departments d ON d.id=t.department_id WHERE t.status IN ('waiting','called') OR (t.status IN ('served','cancelled','skipped') AND COALESCE(t.served_at,t.skipped_at,t.created_at)>?)").all(new Date(Date.now()-300000).toISOString());
     for(const t of subscriptions){const s={id:t.subscription_id};const v=view({...t,id:t.ticket_id});let stage=t.status,message;
       if(t.status==='waiting'){if(v.peopleAhead>2)continue;stage='ahead-'+v.peopleAhead;message=v.peopleAhead?`Mancano ${v.peopleAhead} persone al tuo turno. Avvicinati al reparto.`:'Sei il prossimo. Avvicinati al reparto.';}
       else if(t.status==='called'){stage='called-'+t.called_at;message='È il tuo turno! Recati al banco.';}
@@ -30,6 +31,7 @@ function createPush(db,setting,setSetting,view,{send}={}) {
     void flush();
   }
   async function flush(){if(busy||stopped)return;busy=true;try{
+    db.prepare('DELETE FROM push_outbox WHERE subscription_id NOT IN (SELECT id FROM push_subscriptions)').run();
     const pending=db.prepare('SELECT o.*,s.subscription FROM push_outbox o JOIN push_subscriptions s ON s.id=o.subscription_id WHERE sent_at IS NULL AND next_at<=? AND expires_at>? ORDER BY o.id LIMIT 50').all(Date.now(),Date.now());
     for(const o of pending){if(stopped)break;try{
       await (send||webpush.sendNotification)(JSON.parse(o.subscription),o.payload,{TTL:120,urgency:'high',timeout:10000,vapidDetails:{subject:'https://eliminacode.invalid',publicKey:setting('vapidPublic',''),privateKey:setting('vapidPrivate','')}});

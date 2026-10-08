@@ -44,6 +44,7 @@ async function startServer(options = {}) {
   }
   const depColumns=db.prepare('PRAGMA table_info(departments)').all().map(x=>x.name);
   for(const [name,type] of [['wait_mode',"TEXT NOT NULL DEFAULT 'auto'"],['manual_minutes','REAL NOT NULL DEFAULT 3'],['sample_size','INTEGER NOT NULL DEFAULT 20'],['max_gap_minutes','REAL NOT NULL DEFAULT 30']]) if(!depColumns.includes(name))db.exec(`ALTER TABLE departments ADD COLUMN ${name} ${type}`);
+  db.exec('CREATE INDEX IF NOT EXISTS ticket_served_times ON tickets(department_id,status,served_at DESC)');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS ticket_request ON tickets(device_id,request_id) WHERE request_id IS NOT NULL');
   if (!db.prepare('SELECT COUNT(*) AS n FROM departments').get().n) {
     const insert = db.prepare('INSERT INTO departments(id,name,prefix,sort_order) VALUES(?,?,?,?)');
