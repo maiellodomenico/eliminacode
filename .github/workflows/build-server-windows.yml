@@ -1,13 +1,13 @@
 name: Build Eliminacode Server Windows
 
-on:
+"on":
   workflow_dispatch:
   push:
     branches:
       - local-first-v1
     paths:
-      - 'apps/server-windows/**'
-      - '.github/workflows/build-server-windows.yml'
+      - "apps/server-windows/**"
+      - ".github/workflows/build-server-windows.yml"
 
 jobs:
   build:
@@ -18,17 +18,22 @@ jobs:
         working-directory: apps/server-windows
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
-      - run: npm install
+      - name: Install dependencies
+        run: npm install
 
-      - run: npm run dist:win
+      - name: Build Windows EXE
+        run: npm run dist:win
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
         with:
           name: Eliminacode-Server-Windows-v1
           path: apps/server-windows/release/*.exe
